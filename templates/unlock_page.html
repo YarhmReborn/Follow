@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Unlock Reward</title>
+  <script>
+    let tiktokUser = localStorage.getItem("tiktok_username");
+    function saveUsername() {
+      const input = document.getElementById("userInput").value;
+      if (input) {
+        localStorage.setItem("tiktok_username", input);
+        location.reload();
+      }
+    }
+
+    async function verifyFollow() {
+      const res = await fetch("/check_follow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user: localStorage.getItem("tiktok_username"),
+          target: "{{ tiktok_username }}",
+          uid: "{{ id }}"
+        })
+      });
+      const data = await res.json();
+      if (data.followed) {
+        document.getElementById("stage3").style.display = "block";
+      } else {
+        alert("Follow not detected. Try again later.");
+      }
+    }
+
+    function initPage() {
+      if (!tiktokUser) {
+        document.getElementById("stage0").style.display = "block";
+      } else {
+        document.getElementById("stage1").style.display = "block";
+      }
+    }
+    window.onload = initPage;
+  </script>
+</head>
+<body>
+  <h2>Hello!</h2>
+  <p>Total Completed: {{ completed_count }}</p>
+
+  <div id="stage0" style="display:none;">
+    <p>Enter your TikTok username:</p>
+    <input id="userInput">
+    <button onclick="saveUsername()">Go to Next Stage</button>
+  </div>
+
+  <div id="stage1" style="display:none;">
+    <p>Follow TikTok Account: <b>@{{ tiktok_username }}</b></p>
+    <a href="https://www.tiktok.com/@{{ tiktok_username }}" target="_blank">
+      <button>Follow TikTok Account</button>
+    </a>
+    <br><br>
+    <button onclick="verifyFollow()">Verify</button>
+  </div>
+
+  <div id="stage3" style="display:none;">
+    <p>✅ Verified!</p>
+    <a href="{{ reward_link }}"><button>Get Reward</button></a>
+  </div>
+</body>
+</html>
